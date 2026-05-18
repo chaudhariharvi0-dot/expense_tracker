@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpendWise | Master Your Money</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    
+    <style>
+        .currency-badge {
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.5);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .settings-btn {
+            transition: all 0.3s ease;
+        }
+
+        .settings-btn:hover {
+            background: rgba(99, 102, 241, 0.3);
+            transform: rotate(20deg);
+        }
+    </style>
+</head>
+<body>
+
+<!-- ================= NAVBAR ================= -->
+
+<nav class="nav-bar">
+    <div class="logo">
+        <i class="fas fa-chart-line"></i>
+        <span>SpendWise</span>
+    </div>
+
+    <div class="nav-links">
+        <a href="{{ url_for('index') }}#dashboard">Dashboard</a>
+        <a href="{{ url_for('all_transactions') }}">History</a>
+        <a href="{{ url_for('goals_page') }}" class="highlight-link">🎯 Goals</a>
+        <a href="{{ url_for('index') }}#features">Features</a>
+    </div>
+
+    <div class="nav-auth">
+        {% if name %}
+            <span class="currency-badge" id="currencyDisplay">
+                <i class="fas fa-globe"></i> 
+                <span id="currencyCode">INR</span>
+            </span>
+            
+            
+            
+            <span class="welcome">Hi, {{ name[0]|upper }}</span>
+            <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('signup') }}" class="signup-btn">Signup</a>
+        {% endif %}
+    </div>
+</nav>
+
+<!-- ================= HERO ================= -->
+
+<header class="hero">
+    <h1>Master Your <span>Money</span> Effortlessly</h1>
+    <p>Track your expenses in multiple currencies, manage budgets, and grow your savings.</p>
+
+    <div class="hero-buttons">
+        <a href="{{ url_for('track_page') }}" class="primary-btn">Start Tracking</a>
+        <a href="{{ url_for('goals_page') }}" class="secondary-btn">Set Goals 🎯</a>
+    </div>
+</header>
+
+<!-- ================= DASHBOARD ================= -->
+
+<section id="dashboard" class="dashboard">
+
+    <div class="dashboard-header">
+        <div>
+            <h2>Monthly Overview</h2>
+            <p id="balanceNote" class="text-sm text-gray-400 mt-1">All amounts in base currency</p>
+        </div>
+        <div>
+            <p>Total Balance</p>
+            <h3 id="balanceAmount">₹{{ "{:,.2f}".format(balance) }}</h3>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+
+        <!-- WEEKLY EXPENSE CHART -->
+        <div class="card chart-container">
+            <h4>Weekly Expense Trend</h4>
+            <canvas id="mainChart" height="80"></canvas>
+        </div>
+
+        <!-- CATEGORY COMPARISON CHART -->
+        <div class="card chart-container">
+            <h4>Category Comparison (Last Month vs This Month)</h4>
+            <canvas id="categoryChart" height="80"></canvas>
+        </div>
+
+        <!-- ACTIVITY FEED -->
+        <div class="card activity-card">
+            <h4>Activity Feed</h4>
+
+            <div class="activity-list">
+                {% for tx in transactions %}
+                <div class="activity-item">
+                    <div>
+                        <strong>{{ tx.category }}</strong>
+                        <small>{{ tx.date }} • {{ tx.currency }}</small>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <span class="{% if tx.type == 'income' %}income{% else %}expense{% endif %}">
+                            {% if tx.type == 'expense' %}-{% else %}+{% endif %}
+                            ₹{{ "{:,.2f}".format(tx.amount_in_base) }}
+                        </span>
+                        {% if tx.currency != 'INR' %}
+                        <small class="text-gray-500 text-xs mt-1">{{ tx.currency }} {{ "{:,.2f}".format(tx.amount) }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="quick-actions">
+                <a href="{{ url_for('track_page') }}" class="quick-btn">
+                    + Add Transaction
+                </a>
+                <a href="{{ url_for('goals_page') }}" class="quick-btn goal-btn">
+                    🎯 View Goals
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================= FEATURES ================= -->
+
+<section id="features" class="features">
+    <h2>Why Choose SpendWise?</h2>
+
+    <div class="features-grid">
+        <div class="feature-card">
+            <i class="fas fa-globe"></i>
+            <h3>Multi-Currency</h3>
+            <p>Track expenses in 10+ currencies with real-time conversion.</p>
+        </div>
+
+        
+
+        <div class="feature-card">
+            <i class="fas fa-shield-alt"></i>
+            <h3>Secure</h3>
+            <p>Encrypted and locally stored.</p>
+        </div>
+
+        <div class="feature-card">
+            <i class="fas fa-bolt"></i>
+            <h3>Fast Entry</h3>
+            <p>Add expenses in seconds.</p>
+        </div>
+
+        <div class="feature-card">
+            <i class="fas fa-bullseye"></i>
+            <h3>Goal Setting</h3>
+            <p>Track category-wise budgets easily.</p>
+        </div>
+
+        <div class="feature-card">
+            <i class="fas fa-chart-bar"></i>
+            <h3>Analytics</h3>
+            <p>Beautiful charts & spending insights.</p>
+        </div>
+    </div>
+</section>
+
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
+
+<script>
+    // Load user's preferred currency on page load
+    async function loadUserCurrency() {
+        try {
+            const response = await fetch("/api/user/currency");
+            const data = await response.json();
+            
+            const currencyCode = document.getElementById("currencyCode");
+            const balanceAmount = document.getElementById("balanceAmount");
+            const balanceNote = document.getElementById("balanceNote");
+            
+            if (currencyCode) {
+                currencyCode.textContent = data.preferred_currency;
+            }
+            
+            // Update balance display note
+            if (balanceNote) {
+                balanceNote.textContent = `All amounts displayed in base currency (INR)`;
+            }
+        } catch (error) {
+            console.error("Error loading currency:", error);
+        }
+    }
+
+    // Load currency when page loads
+    document.addEventListener("DOMContentLoaded", function() {
+        loadUserCurrency();
+    });
+</script>
+
+</body>
+</html>

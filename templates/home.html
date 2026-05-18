@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpendWise | Master Your Money</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap');
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #05070a;
+            color: #ffffff;
+        }
+
+        .glass-card {
+            background: rgba(15, 18, 26, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .btn-glow {
+            box-shadow: 0 0 20px rgba(79, 70, 229, 0.3);
+        }
+
+        /* Modal Overlay Background */
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Style for inputs in the entry form */
+        input, select {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+        }
+
+        input:focus {
+            border-color: #6366f1 !important;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sticky top-0 z-40 px-8 py-5 flex justify-between items-center bg-[#05070a]/80 backdrop-blur-md border-b border-white/5">
+        <div class="flex items-center gap-2">
+            <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center">
+                <i class="fas fa-chart-line text-white"></i>
+            </div>
+            <span class="text-2xl font-extrabold tracking-tighter italic">SpendWise</span>
+        </div>
+        <div class="flex items-center gap-6">
+            <button onclick="toggleEntryModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-7 py-2.5 rounded-full font-bold text-sm transition btn-glow">
+                <i class="fas fa-plus mr-2"></i> Add Data
+            </button>
+        </div>
+    </nav>
+
+    <section id="dashboard" class="max-w-6xl mx-auto px-6 mt-12 mb-32">
+        <div class="bg-[#0c0f17] rounded-[3rem] p-8 border border-white/5 shadow-2xl">
+            <div class="flex justify-between items-center mb-12">
+                <h2 class="text-3xl font-black">Financial Intelligence</h2>
+                <div class="text-right">
+                    <p class="text-gray-500 text-xs font-bold uppercase mb-1">Total Balance</p>
+                    <h3 class="text-4xl font-black">₹4,82,000</h3>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-1 gap-8">
+                <div class="glass-card p-8 rounded-[2.5rem] h-[400px]">
+                    <h4 class="text-sm font-bold text-gray-400 mb-6">Monthly Spending Trajectory</h4>
+                    <canvas id="mainAreaChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="entryModal" class="fixed inset-0 z-50 flex items-center justify-center modal-overlay hidden">
+        <div class="glass-card w-full max-w-md p-10 rounded-[3rem] border-white/10 relative">
+            <button onclick="toggleEntryModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white transition">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+
+            <h2 class="text-2xl font-black mb-8">New Transaction</h2>
+
+            <form id="transactionForm" class="space-y-6">
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Amount (₹)</label>
+                    <input type="number" placeholder="0.00" class="w-full text-4xl font-black p-5 rounded-2xl mt-1 text-center" required>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Category</label>
+                    <select class="w-full p-4 rounded-2xl mt-1 font-semibold">
+                        <option>Shopping</option>
+                        <option>Food & Drinks</option>
+                        <option>Salary / Income</option>
+                        <option>Rent / Bills</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 py-5 rounded-2xl font-black text-lg hover:bg-indigo-700 transition shadow-xl shadow-indigo-500/20">
+                    Save to Dashboard
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // FUNCTION TO SHOW/HIDE THE ENTRY FORM
+        function toggleEntryModal() {
+            const modal = document.getElementById('entryModal');
+            modal.classList.toggle('hidden');
+        }
+
+        // CHART CONFIGURATION
+        const ctx = document.getElementById('mainAreaChart').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
+        gradient.addColorStop(1, 'rgba(12, 15, 23, 0)');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Wk 1', 'Wk 2', 'Wk 3', 'Wk 4'],
+                datasets: [{
+                    data: [15000, 28000, 22000, 32450],
+                    borderColor: '#6366f1',
+                    borderWidth: 4,
+                    fill: true,
+                    backgroundColor: gradient,
+                    tension: 0.45,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#4b5563' } },
+                    y: { grid: { color: 'rgba(255,255,255,0.02)' }, ticks: { color: '#4b5563' } }
+                }
+            }
+        });
+
+        // HANDLE FORM SUBMISSION
+        document.getElementById('transactionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Transaction Saved Successfully!');
+            toggleEntryModal(); // Close the modal
+        });
+    </script>
+</body>
+</html>

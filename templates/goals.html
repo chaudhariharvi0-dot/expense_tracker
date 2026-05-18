@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goals | SpendWise</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #05070a; color: #ffffff; }
+        .glass-card { background: rgba(15, 18, 26, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .progress-bar { background: rgba(255,255,255,0.1); border-radius: 10px; height: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #a78bfa); transition: width 0.3s ease; }
+        .progress-fill.exceeded { background: linear-gradient(90deg, #ef4444, #f87171); }
+        .goal-card { transition: transform 0.3s, box-shadow 0.3s; }
+        .goal-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2); }
+    </style>
+</head>
+<body class="p-6 md:p-12">
+
+<!-- NAVBAR -->
+<nav class="fixed top-0 left-0 right-0 z-40 px-8 py-5 flex justify-between items-center bg-[#05070a]/80 backdrop-blur-md border-b border-white/5">
+    <div class="flex items-center gap-2">
+        <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center">
+            <i class="fas fa-target text-white"></i>
+        </div>
+        <span class="text-2xl font-extrabold">SpendWise Goals</span>
+    </div>
+    <div class="flex items-center gap-4">
+        <a href="/" class="text-gray-400 hover:text-white">← Dashboard</a>
+        <button onclick="toggleGoalModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-full font-bold text-sm transition">
+            <i class="fas fa-plus mr-2"></i> Add Goal
+        </button>
+    </div>
+</nav>
+
+<div class="max-w-6xl mx-auto mt-24">
+
+    <!-- SUMMARY CARDS -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div class="glass-card p-8 rounded-[2.5rem]">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-gray-400 text-sm font-bold mb-2">TOTAL GOALS</p>
+                    <h3 id="totalGoals" class="text-4xl font-black">0</h3>
+                </div>
+                <i class="fas fa-bullseye text-indigo-500 text-2xl"></i>
+            </div>
+        </div>
+
+        <div class="glass-card p-8 rounded-[2.5rem]">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-gray-400 text-sm font-bold mb-2">ON TRACK</p>
+                    <h3 id="onTrack" class="text-4xl font-black text-green-500">0</h3>
+                </div>
+                <i class="fas fa-check-circle text-green-500 text-2xl"></i>
+            </div>
+        </div>
+
+        <div class="glass-card p-8 rounded-[2.5rem]">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-gray-400 text-sm font-bold mb-2">EXCEEDED</p>
+                    <h3 id="exceeded" class="text-4xl font-black text-red-500">0</h3>
+                </div>
+                <i class="fas fa-exclamation-circle text-red-500 text-2xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- GOALS LIST -->
+    <div class="glass-card p-8 rounded-[2.5rem]">
+        <h2 class="text-2xl font-black mb-8">This Month's Goals</h2>
+        
+        <div id="goalsList" class="space-y-6">
+            <div class="text-center py-12 text-gray-500">
+                <i class="fas fa-inbox text-4xl mb-4"></i>
+                <p>No goals set yet. Create one to get started!</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ADD GOAL MODAL -->
+<div id="goalModal" class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md hidden" style="background: rgba(0,0,0,0.8);">
+    <div class="glass-card w-full max-w-md p-10 rounded-[2.5rem]">
+        <button onclick="toggleGoalModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white transition">
+            <i class="fas fa-times text-xl"></i>
+        </button>
+
+        <h2 class="text-2xl font-black mb-8">Set Budget Goal</h2>
+
+        <form id="goalForm" class="space-y-6">
+            
+
+            <div>
+                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Budget Limit (₹)</label>
+                <input type="number" id="goalAmount" placeholder="5000" step="100" class="w-full p-4 rounded-2xl mt-1 bg-white/5 border border-white/10 text-white" required>
+            </div>
+
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 py-4 rounded-2xl font-black text-lg transition">
+                Create Goal
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleGoalModal() {
+    document.getElementById("goalModal").classList.toggle("hidden");
+}
+
+async function loadGoals() {
+    try {
+        const response = await fetch("/api/goals");
+        const goals = await response.json();
+
+        const goalsList = document.getElementById("goalsList");
+
+        if (goals.length === 0) {
+            goalsList.innerHTML = `
+                <div class="text-center py-12 text-gray-500">
+                    <i class="fas fa-inbox text-4xl mb-4"></i>
+                    <p>No goals set yet. Create one to get started!</p>
+                </div>
+            `;
+            return;
+        }
+
+        goalsList.innerHTML = goals.map(goal => {
+            const percentage = Math.min((goal.current_amount / goal.target_amount) * 100, 100);
+            const isExceeded = goal.current_amount > goal.target_amount;
+            const remaining = Math.max(0, goal.target_amount - goal.current_amount);
+
+            return `
+                <div class="goal-card glass-card p-6 rounded-2xl">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold">${goal.category}</h3>
+                            <p class="text-gray-500 text-sm">
+                                ₹${goal.current_amount.toFixed(2)} of ₹${goal.target_amount.toFixed(2)}
+                            </p>
+                        </div>
+                        <button onclick="deleteGoal(${goal.id})" class="text-red-500 hover:text-red-400 transition">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+
+                    <div class="progress-bar mb-3">
+                        <div class="progress-fill ${isExceeded ? 'exceeded' : ''}" style="width: ${percentage}%"></div>
+                    </div>
+
+                    <div class="flex justify-between text-xs text-gray-400">
+                        <span>${percentage.toFixed(0)}% Used</span>
+                        <span class="${isExceeded ? 'text-red-500 font-bold' : 'text-green-500'}">
+                            ${isExceeded ? `Exceeded by ₹${(goal.current_amount - goal.target_amount).toFixed(2)}` : `₹${remaining.toFixed(2)} Remaining`}
+                        </span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+    } catch (error) {
+        console.error("Error loading goals:", error);
+    }
+}
+
+async function loadGoalsSummary() {
+    try {
+        const response = await fetch("/api/goals-summary");
+        const summary = await response.json();
+
+        document.getElementById("totalGoals").innerText = summary.total_goals;
+        document.getElementById("onTrack").innerText = summary.on_track;
+        document.getElementById("exceeded").innerText = summary.exceeded;
+
+    } catch (error) {
+        console.error("Error loading summary:", error);
+    }
+}
+
+async function deleteGoal(goalId) {
+    if (!confirm("Delete this goal?")) return;
+
+    try {
+        const response = await fetch(`/api/goals/${goalId}`, { method: "DELETE" });
+        const result = await response.json();
+
+        if (result.success) {
+            loadGoals();
+            loadGoalsSummary();
+        }
+    } catch (error) {
+        console.error("Error deleting goal:", error);
+    }
+}
+
+document.getElementById("goalForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const category = document.getElementById("goalCategory").value;
+    const target_amount = document.getElementById("goalAmount").value;
+
+    if (!category || !target_amount) {
+        alert("Please fill all fields");
+        return;
+    }
+
+    try {
+        const response = await fetch("/api/goals", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ category, target_amount })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert("Goal created successfully!");
+            toggleGoalModal();
+            document.getElementById("goalForm").reset();
+            loadGoals();
+            loadGoalsSummary();
+        } else {
+            alert(result.message || "Error creating goal");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Server error");
+    }
+});
+
+// Load on page load
+document.addEventListener("DOMContentLoaded", function() {
+    loadGoals();
+    loadGoalsSummary();
+});
+</script>
+
+</body>
+</html>
