@@ -20,7 +20,7 @@ SpendWise is a full-stack personal finance web app built with **Flask + SQLite**
 
 Backend : Python 3, Flask 
 Database : SQLite 
-Frontend : HTML, Tailwind CSS, Vanilla JavaScript 
+Frontend : HTML, CSS, JavaScript 
 Charts : Chart.js 
 
 ---
